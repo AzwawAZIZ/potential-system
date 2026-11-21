@@ -1,0 +1,22 @@
+
+> suivi-miage@1.0.0 test:browser
+> node tests/browser.mjs
+
+✓ Connexion avec choix du rôle, puis tableau de bord
+✓ Sept rôles : chaque page et chaque sous-onglet sans erreur
+✓ M1 : aucune ligne ouvrable et aucune identité M2 dans la cohorte
+✓ Filtres structurés, sélection et aperçu en drawer
+✓ CRV : délégation, rectification, archivage, puis trois visas
+✓ Étudiant : CRA brouillon puis envoi avec association explicite
+✓ Import : six lignes, trois anomalies, import partiel confirmé
+✓ Permissions : aperçu, motif requis puis sauvegarde effective
+✓ Audit des messages : aucun contenu avant motif, consultation tracée
+✓ CRV : éditeur riche préstructuré et brouillon modifiable
+✓ Onboarding : demande étudiant, création d’accès et e-mail simulé
+✓ Rupture : qualification, fermeture motivée puis nouveau cycle
+✓ Bascule : confirmation, transfert du périmètre M1 vers M2
+✓ Thème, préférences et données conservés après rechargement
+✓ Mobile : menu, aucune fuite horizontale de la page
+✓ Réinitialisation renforcée revient à la connexion
+
+16 scénarios navigateur réussis ; aucune erreur JavaScript ou console.

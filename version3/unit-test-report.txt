@@ -1,0 +1,234 @@
+
+> suivi-miage@1.0.0 test
+> node --test tests/*.test.js
+
+TAP version 13
+# Subtest: Jeu de données : 12 étudiants, deux promotions et sept rôles
+ok 1 - Jeu de données : 12 étudiants, deux promotions et sept rôles
+  ---
+  duration_ms: 1.845949
+  ...
+# Subtest: Admin : aucune cohorte, aucun dossier, CRA, salon ou import métier
+ok 2 - Admin : aucune cohorte, aucun dossier, CRA, salon ou import métier
+  ---
+  duration_ms: 2.844389
+  ...
+# Subtest: RG-10 : M1 et M2 ne peuvent ouvrir aucune pièce ni aucun dossier
+ok 3 - RG-10 : M1 et M2 ne peuvent ouvrir aucune pièce ni aucun dossier
+  ---
+  duration_ms: 0.832007
+  ...
+# Subtest: Un rôle absent du compte est rejeté
+ok 4 - Un rôle absent du compte est rejeté
+  ---
+  duration_ms: 0.502536
+  ...
+# Subtest: Tuteur : uniquement ses affectations, aucune lecture inter-tuteur
+ok 5 - Tuteur : uniquement ses affectations, aucune lecture inter-tuteur
+  ---
+  duration_ms: 0.398108
+  ...
+# Subtest: Entreprise : uniquement ses étudiants, jamais les CRA
+ok 6 - Entreprise : uniquement ses étudiants, jamais les CRA
+  ---
+  duration_ms: 0.29275
+  ...
+# Subtest: Étudiant : uniquement son propre dossier
+ok 7 - Étudiant : uniquement son propre dossier
+  ---
+  duration_ms: 0.326511
+  ...
+# Subtest: Notifications cloisonnées par couple compte/rôle
+ok 8 - Notifications cloisonnées par couple compte/rôle
+  ---
+  duration_ms: 0.337002
+  ...
+# Subtest: Signalement confidentiel invisible au maître de stage et au tuteur non auteur
+ok 9 - Signalement confidentiel invisible au maître de stage et au tuteur non auteur
+  ---
+  duration_ms: 0.490156
+  ...
+# Subtest: Transfert de signalement limité aux acteurs du dossier
+ok 10 - Transfert de signalement limité aux acteurs du dossier
+  ---
+  duration_ms: 17.025763
+  ...
+# Subtest: Dernier admin : désactivation et retrait de rôle interdits
+ok 11 - Dernier admin : désactivation et retrait de rôle interdits
+  ---
+  duration_ms: 1.324171
+  ...
+# Subtest: Désactivation : motif et confirmation renforcée obligatoires
+ok 12 - Désactivation : motif et confirmation renforcée obligatoires
+  ---
+  duration_ms: 0.981513
+  ...
+# Subtest: Attribution Admin : confirmation ADMIN obligatoire
+ok 13 - Attribution Admin : confirmation ADMIN obligatoire
+  ---
+  duration_ms: 0.763624
+  ...
+# Subtest: Permissions : impossible d’activer un droit métier interdit
+ok 14 - Permissions : impossible d’activer un droit métier interdit
+  ---
+  duration_ms: 0.834204
+  ...
+# Subtest: Permissions : aucun changement sans motif et révocation effective
+ok 15 - Permissions : aucun changement sans motif et révocation effective
+  ---
+  duration_ms: 0.768735
+  ...
+# Subtest: Permissions granulaires : lecture maintenue, validation CRA retirée
+ok 16 - Permissions granulaires : lecture maintenue, validation CRA retirée
+  ---
+  duration_ms: 0.69788
+  ...
+# Subtest: Paramètres : motif, historique Avant/Après et atomicité sur erreur
+ok 17 - Paramètres : motif, historique Avant/Après et atomicité sur erreur
+  ---
+  duration_ms: 0.694587
+  ...
+# Subtest: Paramétrage métier délégué : pas de modification des limites techniques
+ok 18 - Paramétrage métier délégué : pas de modification des limites techniques
+  ---
+  duration_ms: 1.006113
+  ...
+# Subtest: Mission : capacité recontrôlée au moment de l’acceptation
+ok 19 - Mission : capacité recontrôlée au moment de l’acceptation
+  ---
+  duration_ms: 0.525041
+  ...
+# Subtest: Mission : acceptation affecte le dossier et conserve l’ancien tuteur
+ok 20 - Mission : acceptation affecte le dossier et conserve l’ancien tuteur
+  ---
+  duration_ms: 0.672626
+  ...
+# Subtest: Mission : refus sans motif interdit
+ok 21 - Mission : refus sans motif interdit
+  ---
+  duration_ms: 0.63976
+  ...
+# Subtest: Disponibilité : capacité inférieure à la charge interdite
+ok 22 - Disponibilité : capacité inférieure à la charge interdite
+  ---
+  duration_ms: 0.448293
+  ...
+# Subtest: CRA : brouillon puis envoi, association explicite requise
+ok 23 - CRA : brouillon puis envoi, association explicite requise
+  ---
+  duration_ms: 0.997796
+  ...
+# Subtest: CRA : validation réservée au tuteur affecté, complément motivé
+ok 24 - CRA : validation réservée au tuteur affecté, complément motivé
+  ---
+  duration_ms: 1.368574
+  ...
+# Subtest: CRV : impossible de signer hors de l’ordre Tuteur → Entreprise → Étudiant
+ok 25 - CRV : impossible de signer hors de l’ordre Tuteur → Entreprise → Étudiant
+  ---
+  duration_ms: 0.944146
+  ...
+# Subtest: CRV : désaccord gèle tous les visas
+ok 26 - CRV : désaccord gèle tous les visas
+  ---
+  duration_ms: 0.503294
+  ...
+# Subtest: CRV : rectification interdite sans délégation active
+ok 27 - CRV : rectification interdite sans délégation active
+  ---
+  duration_ms: 0.373596
+  ...
+# Subtest: CRV : délégation, révocation puis rectification versionnée et 0/3 visas
+ok 28 - CRV : délégation, révocation puis rectification versionnée et 0/3 visas
+  ---
+  duration_ms: 2.494064
+  ...
+# Subtest: CRV : amendement sans altérer le texte original
+ok 29 - CRV : amendement sans altérer le texte original
+  ---
+  duration_ms: 0.375981
+  ...
+# Subtest: Visites : date passée rejetée et proposition confirmable uniquement par le tuteur
+ok 30 - Visites : date passée rejetée et proposition confirmable uniquement par le tuteur
+  ---
+  duration_ms: 1.730423
+  ...
+# Subtest: Accès entreprise : demande modifiable avant traitement, salon automatique ensuite
+ok 31 - Accès entreprise : demande modifiable avant traitement, salon automatique ensuite
+  ---
+  duration_ms: 1.221021
+  ...
+# Subtest: Salons : ciblage hors acteurs rejeté et responsable inclus pour l’étudiant
+ok 32 - Salons : ciblage hors acteurs rejeté et responsable inclus pour l’étudiant
+  ---
+  duration_ms: 1.136305
+  ...
+# Subtest: Salons : fermeture motivée et historique définitivement en lecture seule
+ok 33 - Salons : fermeture motivée et historique définitivement en lecture seule
+  ---
+  duration_ms: 0.999275
+  ...
+# Subtest: Rupture : nouveau cycle conserve archive sans exposer le nouveau dossier aux anciens acteurs
+ok 34 - Rupture : nouveau cycle conserve archive sans exposer le nouveau dossier aux anciens acteurs
+  ---
+  duration_ms: 1.032346
+  ...
+# Subtest: Bascule : M1 propose, responsable stages applique
+ok 35 - Bascule : M1 propose, responsable stages applique
+  ---
+  duration_ms: 0.781309
+  ...
+# Subtest: CSV : erreurs ligne par ligne et import tolérant
+ok 36 - CSV : erreurs ligne par ligne et import tolérant
+  ---
+  duration_ms: 0.917586
+  ...
+# Subtest: CSV : guillemets et séparateur dans un nom
+ok 37 - CSV : guillemets et séparateur dans un nom
+  ---
+  duration_ms: 0.907427
+  ...
+# Subtest: Audit messages : motif obligatoire et trace avant lecture
+ok 38 - Audit messages : motif obligatoire et trace avant lecture
+  ---
+  duration_ms: 0.711107
+  ...
+# Subtest: Pièces jointes : format et taille contrôlés
+ok 39 - Pièces jointes : format et taille contrôlés
+  ---
+  duration_ms: 0.419756
+  ...
+# Subtest: Une mutation rejetée ne change jamais le jeu de données
+ok 40 - Une mutation rejetée ne change jamais le jeu de données
+  ---
+  duration_ms: 0.998719
+  ...
+# Subtest: Expiration : le moteur refuse les lectures et écritures après inactivité
+ok 41 - Expiration : le moteur refuse les lectures et écritures après inactivité
+  ---
+  duration_ms: 0.394347
+  ...
+# Subtest: Import : les données sont revalidées par le moteur, pas seulement par l’aperçu
+ok 42 - Import : les données sont revalidées par le moteur, pas seulement par l’aperçu
+  ---
+  duration_ms: 0.206664
+  ...
+# Subtest: Capacité : une valeur non numérique est rejetée
+ok 43 - Capacité : une valeur non numérique est rejetée
+  ---
+  duration_ms: 0.569869
+  ...
+# Subtest: Nouveau cycle : aucun double incrément sans nouvelle rupture
+ok 44 - Nouveau cycle : aucun double incrément sans nouvelle rupture
+  ---
+  duration_ms: 0.790557
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 159.343285
