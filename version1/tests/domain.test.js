@@ -804,3 +804,33 @@ test("CSV : le jeu d’exemple conserve ses deux créations, une mise à jour et
   assert.equal(rows.filter((r) => r.error).length, 3);
   assert.deepEqual(importRows(s, rows, "exemple.csv"), { created: 2, updated: 1, rejected: 3 });
 });
+
+test("Accès entreprise : corriger le contact puis rattacher le compte au dossier", () => {
+  const s = fresh();
+  const p = { student: "s2", company: "Entreprise Démo", mentorName: "Camille Exemple", mentorEmail: " CAMILLE@example.org " };
+  fails(() => mutate(s, "access", { ...p, mentorEmail: "invalide" }), /E-mail/);
+  const d = s.students.find(x => x.id === p.student);
+  assert.equal(d.access, "En attente");
+  mutate(s, "access", p);
+  const account = s.users.find(x => x.id === d.mentor);
+  assert.equal(account.name, p.mentorName);
+  assert.equal(account.email, "camille@example.org");
+  assert.equal(d.company, p.company);
+});
+
+test("Import : conflit, résolution et conservation du statut entre deux imports", () => {
+  const s = fresh();
+  const d = s.students[0];
+  const preview = status => parseCSV(
+    `nom;email;promotion;statut\n${d.name};${d.email};${d.promo};${status}`, s);
+  const apply = status => importRows(s, preview(status), "situations.csv");
+  assert.equal(apply("En conflit avec l'entreprise").updated, 1);
+  assert.equal(d.status, "En conflit avec l’entreprise");
+  assert.equal(apply("inconnu").rejected, 1);
+  apply("");
+  assert.equal(d.status, "En conflit avec l’entreprise");
+  const stale = preview("Rupture");
+  apply("En cours");
+  assert.equal(importRows(s, stale, "ancien.csv").rejected, 1);
+  assert.equal(d.status, "En cours");
+});

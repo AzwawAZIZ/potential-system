@@ -1020,14 +1020,22 @@ function execute(s, action, p = {}) {
       scoped();
       if (d.access !== "En attente") throw Error("Aucune demande en attente.");
       {
-        let mentor = s.users.find((x) => x.email === d.mentorEmail);
+        const company = importText(p.company ?? d.company);
+        const mentorName = importText(p.mentorName ?? d.mentorName);
+        const mentorEmail = importEmail(p.mentorEmail ?? d.mentorEmail);
+        need(company, "Entreprise obligatoire.");
+        need(mentorName, "Nom du contact obligatoire.");
+        if (!validImportEmail(mentorEmail)) throw Error("E-mail professionnel invalide.");
+        const matches = s.users.filter((x) => importEmail(x.email) === mentorEmail);
+        if (matches.length > 1) throw Error("Plusieurs comptes utilisent cet e-mail.");
+        let mentor = matches[0];
         if (mentor && !mentor.roles.includes("company"))
           throw Error("Cet e-mail est déjà utilisé par un compte interne.");
         if (!mentor) {
           mentor = {
             id: id("u"),
-            name: d.mentorName,
-            email: d.mentorEmail,
+            name: mentorName,
+            email: mentorEmail,
             roles: ["company"],
             active: true,
             created: "2026-11-21",
@@ -1039,6 +1047,9 @@ function execute(s, action, p = {}) {
           throw Error(
             "Le compte entreprise est désactivé. Contactez l’administrateur.",
           );
+        if (normalizedImportName(mentor.name) !== normalizedImportName(mentorName))
+          throw Error("Le nom saisi ne correspond pas au compte entreprise existant.");
+        Object.assign(d, { company, mentorName: mentor.name, mentorEmail });
         d.mentor = mentor.id;
         d.access = "Accès créé";
         notify(
@@ -1309,6 +1320,16 @@ function openRoom(s, d) {
       messages: [],
     });
 }
+export const STUDENT_STATUSES = [
+  "En recherche", "À affecter", "Période d’essai", "En cours",
+  "En conflit avec l’entreprise", "Désaccord CRV", "Rupture à examiner", "Rupture", "Clôturé",
+];
+const statusKey = (value) => importText(value).toLocaleLowerCase("fr").replaceAll("'", "’");
+function csvStatus(value) {
+  const key = statusKey(value);
+  if (["conflit", "conflit avec l’entreprise"].includes(key)) return "En conflit avec l’entreprise";
+  return STUDENT_STATUSES.find((status) => statusKey(status) === key);
+}
 const CSV_REQUIRED = ["nom", "email", "promotion"];
 const CSV_LIMIT = 10000;
 const CSV_EMAIL =
@@ -1324,6 +1345,7 @@ const importReasons = new Set([
   "E-mail invalide",
   "Promotion attendue : M1 ou M2",
   "Ville invalide",
+  "Statut étudiant inconnu",
   "Doublon dans le fichier",
   "E-mail ambigu dans les dossiers existants",
   "E-mail ambigu dans les comptes existants",
@@ -1418,6 +1440,7 @@ function validateImportRows(s, rows) {
       email = importEmail(row.email),
       promotion = importText(row.promotion).toUpperCase(),
       ville = importText(row.ville);
+    const statut = csvStatus(row.statut) || "";
     const students = studentsByEmail.get(email) || [];
     const users = usersByEmail.get(email) || [];
     const syntaxError = csvSyntaxErrors.get(row) || "";
@@ -1441,6 +1464,7 @@ function validateImportRows(s, rows) {
         row.ville != null &&
         (typeof row.ville !== "string" || /[\r\n]/.test(row.ville))
       ) error = "Ville invalide";
+      else if (importText(row.statut) && !statut) error = "Statut étudiant inconnu";
       else if (seen.has(email)) error = "Doublon dans le fichier";
       else if (students.length > 1)
         error = "E-mail ambigu dans les dossiers existants";
@@ -1459,6 +1483,8 @@ function validateImportRows(s, rows) {
           preview.email !== email ||
           preview.promotion !== promotion ||
           preview.ville !== ville ||
+          preview.statut !== statut ||
+          (statut && preview.previousStatus !== students[0]?.status) ||
           preview.student !== (students[0]?.id ?? null) ||
           preview.user !== (students[0]?.user ?? null))
       )
@@ -1493,6 +1519,7 @@ function validateImportRows(s, rows) {
       email,
       promotion,
       ville,
+      statut: statut || importText(row.statut),
       error,
       kind: students.length ? "Mise à jour" : "Création",
     };
@@ -1560,6 +1587,8 @@ export function parseCSV(text, s) {
       email: row.email,
       promotion: row.promotion,
       ville: row.ville,
+      statut: row.statut,
+      previousStatus: student?.status,
       error: row.error,
       student: student?.id ?? null,
       user: student?.user ?? null,
@@ -1590,6 +1619,7 @@ export function importRows(s, rows, file) {
       old.name = old.user ? usersById.get(old.user)[0].name : row.nom;
       old.promo = row.promotion;
       if (row.ville) old.city = row.ville;
+      if (row.statut) old.status = row.statut;
       counters.updated++;
     } else {
       const baseId = id("s");
@@ -1608,7 +1638,7 @@ export function importRows(s, rows, file) {
         city: row.ville || "Amiens",
         tutor: null,
         mentor: null,
-        status: "En recherche",
+        status: row.statut || "En recherche",
         step: 0,
         cycle: 1,
         access: "À déclarer",

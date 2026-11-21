@@ -20,6 +20,7 @@ import {
   attachment,
   parseCSV,
   importRows,
+  STUDENT_STATUSES,
   visitsFor,
   crvsFor,
   crasFor,
@@ -1416,7 +1417,7 @@ function importsHistory() {
   return `<div class="table-wrap" tabindex="0" role="region" aria-label="Tableau de données"><table><thead><tr><th>Date</th><th>Auteur</th><th>Fichier</th><th>Créés</th><th>Modifiés</th><th>Rejetés</th><th>Motifs techniques</th></tr></thead><tbody>${s.imports.map((x) => `<tr><td>${esc(x.date)}</td><td>${esc(name(x.author))}</td><td>${esc(x.file)}</td><td>${x.created}</td><td>${x.updated}</td><td>${x.rejected}</td><td>${esc(x.reasons || "Aucun")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 const exampleCSV =
-  "nom;email;promotion;ville\nAlice Caron;alice.caron@u-picardie.fr;M1;Amiens\nLucie Bernard;lucie.bernard@u-picardie.fr;M1;Amiens\nYanis Noël;yanis.noel@u-picardie.fr;M2;Lille\nAlice Caron;alice.caron@u-picardie.fr;M1;Amiens\nSarah Faure;sarah.sans-arobase;M1;Beauvais\nNoé Lambert;noe.lambert@u-picardie.fr;L3;Amiens";
+  "nom;email;promotion;ville;statut\nAlice Caron;alice.caron@u-picardie.fr;M1;Amiens;\nLucie Bernard;lucie.bernard@u-picardie.fr;M1;Amiens;En conflit avec l’entreprise\nYanis Noël;yanis.noel@u-picardie.fr;M2;Lille;\nAlice Caron;alice.caron@u-picardie.fr;M1;Amiens;\nSarah Faure;sarah.sans-arobase;M1;Beauvais;\nNoé Lambert;noe.lambert@u-picardie.fr;L3;Amiens;";
 function importsPage() {
   return (
     header(
@@ -1430,14 +1431,14 @@ function importsPage() {
         ["history", "Historique des imports"],
       ],
       tab || "wizard",
-    )}<div class="panel-body">${tab === "history" ? importsHistory() : `<div class="stepper">${["Dépôt des données", "Contrôle & aperçu", "Confirmation & import"].map((t, i) => `<div class="wizard-step ${importStep === i + 1 ? "active" : ""}"><strong>0${i + 1}</strong> · ${t}</div>`).join("")}</div>${importStep === 1 ? `<form data-form="import-preview"><div class="form-error" role="alert"></div><div class="upload-area">${icon("upload")}<h3>Vos données, prêtes à être vérifiées</h3><p>Déposez un CSV UTF-8 exporté depuis Excel ou collez son contenu.<br>Colonnes requises : nom, email, promotion. Colonne facultative : ville.</p><input type="file" id="csv-file" accept=".csv,text/csv" aria-label="Choisir un fichier CSV"><p>Les fichiers .xlsx doivent d’abord être exportés en CSV.</p>${btn("Utiliser le jeu d’exemple avec anomalies", "import-example", "small", "spark")}</div><div class="mt">${area("Données CSV (séparateur ; ou ,)", "csv", "", "Les guillemets CSV et les cellules contenant des séparateurs sont reconnus. Un enregistrement par ligne.")}</div><button type="submit" class="primary mt">Contrôler les données ${icon("arrow")}</button></form>` : importStep === 2 ? `${importSummary()}${importPreview()}<div class="row between wrap mt">${btn("Retour au dépôt", "import-back", "", "back")}${importData.some((x) => x.error) ? btn("Télécharger les rejets CSV", "import-rejects", "", "download") : ""}${btn("Continuer vers la confirmation", "import-next", "primary", "arrow")}</div>` : `${importSummary()}${notice("Seules les lignes valides seront importées", "Les lignes rejetées restent disponibles en CSV avec un motif précis. Aucun rejet ne bloque les autres lignes.", "amber", "alert")}<div class="row wrap">${btn("Télécharger les rejets CSV", "import-rejects", "", "download")}${btn("Modifier le fichier", "import-restart", "", "back")}</div><form class="mt" data-form="import-confirm"><div class="form-error" role="alert"></div><label class="check-label"><input type="checkbox" name="confirmed" required>Je confirme l’import de ${importData.filter((x) => !x.error).length} ligne(s) valide(s), en excluant les ${importData.filter((x) => x.error).length} rejet(s).</label><button type="submit" class="primary mt">${icon("check")} Importer les lignes valides</button></form>`}`}</div></section>`
+    )}<div class="panel-body">${tab === "history" ? importsHistory() : `<div class="stepper">${["Dépôt des données", "Contrôle & aperçu", "Confirmation & import"].map((t, i) => `<div class="wizard-step ${importStep === i + 1 ? "active" : ""}"><strong>0${i + 1}</strong> · ${t}</div>`).join("")}</div>${importStep === 1 ? `<form data-form="import-preview"><div class="form-error" role="alert"></div><div class="upload-area">${icon("upload")}<h3>Vos données, prêtes à être vérifiées</h3><p>Déposez un CSV UTF-8 exporté depuis Excel ou collez son contenu.<br>Colonnes requises : nom, email, promotion. Colonnes facultatives : ville et statut. Une cellule vide conserve la valeur du dossier. Statuts acceptés : ${STUDENT_STATUSES.join(", ")}.</p><input type="file" id="csv-file" accept=".csv,text/csv" aria-label="Choisir un fichier CSV"><p>Les fichiers .xlsx doivent d’abord être exportés en CSV.</p>${btn("Utiliser le jeu d’exemple avec anomalies", "import-example", "small", "spark")}</div><div class="mt">${area("Données CSV (séparateur ; ou ,)", "csv", "", "Les guillemets CSV et les cellules contenant des séparateurs sont reconnus. Un enregistrement par ligne.")}</div><button type="submit" class="primary mt">Contrôler les données ${icon("arrow")}</button></form>` : importStep === 2 ? `${importSummary()}${importPreview()}<div class="row between wrap mt">${btn("Retour au dépôt", "import-back", "", "back")}${importData.some((x) => x.error) ? btn("Télécharger les rejets CSV", "import-rejects", "", "download") : ""}${btn("Continuer vers la confirmation", "import-next", "primary", "arrow")}</div>` : `${importSummary()}${notice("Seules les lignes valides seront importées", "Les lignes rejetées restent disponibles en CSV avec un motif précis. Aucun rejet ne bloque les autres lignes.", "amber", "alert")}<div class="row wrap">${btn("Télécharger les rejets CSV", "import-rejects", "", "download")}${btn("Modifier le fichier", "import-restart", "", "back")}</div><form class="mt" data-form="import-confirm"><div class="form-error" role="alert"></div><label class="check-label"><input type="checkbox" name="confirmed" required>Je confirme l’import de ${importData.filter((x) => !x.error).length} ligne(s) valide(s), en excluant les ${importData.filter((x) => x.error).length} rejet(s).</label><button type="submit" class="primary mt">${icon("check")} Importer les lignes valides</button></form>`}`}</div></section>`
   );
 }
 function importSummary() {
   return `<div class="metric-grid mb">${metric("Lignes analysées", importData.length, "Colonnes reconnues : nom, email, promotion", "file")}${metric("Créations", importData.filter((x) => !x.error && x.kind === "Création").length, "Nouveaux étudiants", "plus")}${metric("Mises à jour", importData.filter((x) => !x.error && x.kind === "Mise à jour").length, "Correspondance par e-mail", "refresh")}${metric("Rejets", importData.filter((x) => x.error).length, "Téléchargeables avec leur motif", "alert")}</div>`;
 }
 function importPreview() {
-  return `<div class="table-wrap" tabindex="0" role="region" aria-label="Tableau de données"><table><thead><tr><th>Ligne</th><th>Nom</th><th>E-mail</th><th>Promotion</th><th>Contrôle</th></tr></thead><tbody>${importData.map((x) => `<tr><td>${x.line}</td><td>${esc(x.nom)}</td><td>${esc(x.email)}</td><td>${esc(x.promotion)}</td><td>${badge(x.error || x.kind)}</td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="table-wrap" tabindex="0" role="region" aria-label="Tableau de données"><table><thead><tr><th>Ligne</th><th>Nom</th><th>E-mail</th><th>Promotion</th><th>Statut importé</th><th>Contrôle</th></tr></thead><tbody>${importData.map((x) => `<tr><td>${x.line}</td><td>${esc(x.nom)}</td><td>${esc(x.email)}</td><td>${esc(x.promotion)}</td><td>${esc(x.statut || (x.kind === "Création" ? "En recherche" : "Conservé"))}</td><td>${badge(x.error || x.kind)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 let previousFocus = null,
   pendingUser = null,
@@ -2196,15 +2197,17 @@ async function handleAction(a, el) {
           "Confirmer l’affectation",
         );
         break;
-      case "access-create":
-        confirmDialog(
+      case "access-create": {
+        const d = dossier(s, student);
+        formDialog(
           "Créer l’accès entreprise",
-          "Un compte externe sera créé ou rattaché. Il ne verra que les dossiers qui lui sont affectés. Un e-mail d’invitation sera simulé.",
           "access",
-          { student },
-          "Valider & créer l’accès",
+          notice("Dossier de " + esc(d.name), "Vérifiez les coordonnées du contact. Une invitation est simulée après validation.") +
+            `<div class="form-grid">${field("Entreprise", "company", d.company === "—" ? "" : d.company)}${field("Nom complet du contact", "mentorName", d.mentorName || "")}${field("E-mail professionnel", "mentorEmail", d.mentorEmail || "", "email")}</div>`,
+          { student }, "Valider & créer l’accès",
         );
         break;
+      }
       case "report-form":
         reportForm(p.student);
         break;
@@ -2668,6 +2671,9 @@ async function handleSubmit(e) {
       case "newCycle":
       case "reportAction":
         act(kind, { ...context, ...p });
+        break;
+      case "access":
+        act("access", { ...p, ...context }, "Accès entreprise créé ou rattaché.");
         break;
       case "onboarding":
         act("onboarding", p, "Demande transmise au responsable stages.");
