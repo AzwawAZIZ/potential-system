@@ -1,0 +1,21 @@
+{
+  "name": "suivi-miage",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.9.9",
+  "scripts": {
+    "start": "python3 -m http.server 3000 --bind 0.0.0.0",
+    "test": "node --test tests/*.test.js",
+    "build": "node bundle.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:improvements": "node tests/improvements.mjs",
+    "test:followup": "node tests/followup.mjs",
+    "test:accessibility": "node tests/accessibility.mjs",
+    "test:standalone": "npm run build && node tests/standalone.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.65.1"
+  }
+}

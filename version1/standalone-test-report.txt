@@ -1,0 +1,11 @@
+
+> suivi-miage@1.0.0 test:standalone
+> npm run build && node tests/standalone.mjs
+
+
+> suivi-miage@1.0.0 build
+> node bundle.mjs
+
+Version autonome générée : Suivi-MIAGE-UPJV.html · 236 Ko
+✓ HTML autonome : ouverture file://, connexion, choix du rôle et persistance après rechargement.
+✓ Zéro requête HTTP externe, zéro erreur JavaScript.
