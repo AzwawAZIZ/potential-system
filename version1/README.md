@@ -38,7 +38,7 @@ Le bouton **Guide démo & comptes**, présent sur la connexion et dans la barre 
 | Compte | Rôle(s) | E-mail |
 |---|---|---|
 | Sophie Laurent | Responsable stages + Tuteur universitaire | sophie.laurent@u-picardie.fr |
-| Camille Moreau | Administrateur technique uniquement | camille.moreau@u-picardie.fr |
+| Camille Moreau | Administrateur | camille.moreau@u-picardie.fr |
 | Thomas Lefèvre | Responsable M1 + Tuteur universitaire | thomas.lefevre@u-picardie.fr |
 | Claire Dubois | Responsable M2 | claire.dubois@u-picardie.fr |
 | Julien Mercier | Tuteur universitaire | julien.mercier@u-picardie.fr |
@@ -126,7 +126,7 @@ Colonnes : `nom;email;promotion;ville`. La colonne ville est facultative. Les s�
 **Camille** :
 
 - Aucun dossier étudiant, affectation, import métier ou salon de projet.
-- Comptes en drawer, création/modification, motif, aperçu et confirmations sensibles ; auto-désactivation et suppression du dernier rôle Admin actif bloquées.
+- Comptes dans Paramétrage → Utilisateurs, attribution de plusieurs rôles depuis Gestion des rôles, motif, aperçu et confirmations sensibles ; auto-désactivation et suppression du dernier rôle Admin actif bloquées.
 - Matrice Lecture / Modification / Validation / Paramétrage, filtrage et comparaison de deux rôles ; règles inviolables verrouillées, pas de sauvegarde instantanée.
 - Paramètres avec Ancien/Nouveau, motif, historique et délégation des seuls paramètres métier au responsable stages.
 - Audit des messages directs séparé, en lecture seule, exigeant un motif enregistré avant la consultation.

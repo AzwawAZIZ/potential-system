@@ -272,7 +272,7 @@ function shell() {
   const u = user(),
     r = role(),
     count = notices(s).filter((n) => !n.read).length;
-  return `<aside class="sidebar" aria-label="Navigation principale"><div class="brand"><div class="brandmark">${icon("cap")}</div><div><div class="brand-name">Suivi MIAGE<span style="color:#6298be">.</span></div><div class="brand-caption">L’EXIGENCE, EN LIEN.</div></div></div><div class="workspace"><div class="workspace-icon">${icon("building")}</div><div><strong>MIAGE · UPJV</strong><span>Année 2026 – 2027</span></div>${icon("down")}</div><div class="nav-label">${r === "admin" ? "GOUVERNANCE" : "MON ESPACE"}</div><nav class="nav">${navs[r].map(([v, i, t]) => `<button data-action="nav" data-page="${v}" class="${page === v || (page === "dossier" && v === "cohort") ? "active" : ""}" ${page === v ? 'aria-current="page"' : ""}>${icon(i)}${t}${r === "stages" && v === "access" ? '<span class="count">' + s.students.filter((x) => x.access === "En attente").length + "</span>" : ""}</button>`).join("")}</nav><div class="sidebar-foot"><div class="demo-card"><div class="row">${icon("help")}<strong style="font-size:11px">Un espace pour chaque rôle</strong></div><p>Explorez les parcours et les cas métier de la démonstration.</p>${btn("Guide démo & comptes", "demo", "", "arrow")}</div><div class="university"><strong>UPJV</strong><span>Université de Picardie<br>Jules Verne</span></div></div></aside><div class="shell"><header class="topbar"><div class="breadcrumb">${btn("", "menu", "icon-btn quiet mobile-menu", "menu", 'aria-label="Ouvrir le menu" aria-expanded="false"')}<span>Espace MIAGE</span>${icon("chevron")}<strong>${page === "dossier" ? "Dossier 360°" : navs[r].find((x) => x[0] === page)?.[2] || "Vue d’ensemble"}</strong></div><div class="top-right"><span class="year">2026 – 2027</span><span class="role-pill">${roleShort()}</span>${btn("", "theme", "icon-btn quiet", s.preferences.theme === "dark" ? "sun" : "moon", 'aria-label="Changer le thème"')}${btn(`${count ? `<span class="dot-count">${count}</span>` : ""}`, "notifications", "icon-btn quiet bell", "bell", 'aria-label="Notifications : ' + count + ' non lues"')}<button class="profile-btn" data-action="profile">${avatar(u.name)}<span><strong>${esc(u.name)}</strong><small>${roleShort()}</small></span>${icon("down")}</button></div></header><main id="main" class="main" tabindex="-1">${storageBanner()}${r === "admin" ? '<div class="system-strip">' + icon("shield") + " &nbsp; Administration technique · Aucun accès aux dossiers étudiants ni aux fonctions métier.</div>" : ""}${content()}<footer class="fineprint"><span>Suivi MIAGE · Université de Picardie Jules Verne</span><span class="footer-lock">${icon("lock")}Démonstration locale · Données fictives</span></footer></main></div>`;
+  return `<aside class="sidebar" aria-label="Navigation principale"><div class="brand"><div class="brandmark">${icon("cap")}</div><div><div class="brand-name">Suivi MIAGE<span style="color:#6298be">.</span></div><div class="brand-caption">L’EXIGENCE, EN LIEN.</div></div></div><div class="workspace"><div class="workspace-icon">${icon("building")}</div><div><strong>MIAGE · UPJV</strong><span>Année 2026 – 2027</span></div>${icon("down")}</div><div class="nav-label">${r === "admin" ? "GOUVERNANCE" : "MON ESPACE"}</div><nav class="nav">${navs[r].map(([v, i, t]) => `<button data-action="nav" data-page="${v}" class="${page === v || (page === "dossier" && v === "cohort") ? "active" : ""}" ${page === v ? 'aria-current="page"' : ""}>${icon(i)}${t}${r === "stages" && v === "access" ? '<span class="count">' + s.students.filter((x) => x.access === "En attente").length + "</span>" : ""}</button>`).join("")}</nav><div class="sidebar-foot"><div class="demo-card"><div class="row">${icon("help")}<strong style="font-size:11px">Un espace pour chaque rôle</strong></div><p>Explorez les parcours et les cas métier de la démonstration.</p>${btn("Guide démo & comptes", "demo", "", "arrow")}</div><div class="university"><strong>UPJV</strong><span>Université de Picardie<br>Jules Verne</span></div></div></aside><div class="shell"><header class="topbar"><div class="breadcrumb">${btn("", "menu", "icon-btn quiet mobile-menu", "menu", 'aria-label="Ouvrir le menu" aria-expanded="false"')}<span>Espace MIAGE</span>${icon("chevron")}<strong>${page === "dossier" ? "Dossier 360°" : navs[r].find((x) => x[0] === page)?.[2] || "Vue d’ensemble"}</strong></div><div class="top-right"><span class="year">2026 – 2027</span><span class="role-pill">${roleShort()}</span>${btn("", "theme", "icon-btn quiet", s.preferences.theme === "dark" ? "sun" : "moon", 'aria-label="Changer le thème"')}${btn(`${count ? `<span class="dot-count">${count}</span>` : ""}`, "notifications", "icon-btn quiet bell", "bell", 'aria-label="Notifications : ' + count + ' non lues"')}<button class="profile-btn" data-action="profile">${avatar(u.name)}<span><strong>${esc(u.name)}</strong><small>${roleShort()}</small></span>${icon("down")}</button></div></header><main id="main" class="main" tabindex="-1">${storageBanner()}${r === "admin" ? '<div class="system-strip">' + icon("shield") + " &nbsp; Administration · Utilisateurs, rôles et permissions.</div>" : ""}${content()}<footer class="fineprint"><span>Suivi MIAGE · Université de Picardie Jules Verne</span><span class="footer-lock">${icon("lock")}Démonstration locale · Données fictives</span></footer></main></div>`;
 }
 function render() {
   document.documentElement.dataset.theme = s.preferences.theme;
@@ -1192,16 +1192,22 @@ function adminSettings() {
   const [key] = section;
   const links = available.map(([id, title, symbol]) => `<button data-action="setting-section" data-section="${id}" ${key === id ? 'aria-current="page"' : ""}>${icon(symbol)}<span>${title}</span>${icon("chevron")}</button>`).join("");
   const views = { users: accountsPage, create: () => accountEditor(), roles: rolesPage, permissions: permissionsPage, system: settingsPage };
-  const detail = key === "users" && detailId ? accountEditor(detailId) : views[key]();
+  const detail = key === "users" && detailId ? accountEditor(detailId, filters.suggestedRole) : views[key]();
   return `<div class="config-layout"><aside class="config-rail"><div class="config-title">${icon("settings")}<h2>Paramétrage</h2></div><nav aria-label="Rubriques de paramétrage">${links}</nav></aside><section class="config-detail" aria-label="Détail du paramétrage">${detail}</section></div>`;
 }
 function rolesPage() {
   const selectedRole = filters.memberRole || "admin";
   const members = s.users.filter(u => u.roles.includes(selectedRole));
+  const candidates = s.users.filter(u => !u.roles.includes(selectedRole));
+  const assign = candidates.length && can(role(), "accounts", s, "configure")
+    ? `<form data-form="assign-role" class="panel-body"><div class="form-error" role="alert"></div>
+      ${select("Utilisateur", "account", [["", "Choisir un utilisateur"], ...candidates.map(u => [u.id, u.name + " · " + u.email])])}
+      <button class="primary mt" type="submit">Attribuer ce rôle</button></form>` : "";
   return header("Gestion des rôles", "Sélectionnez un rôle pour consulter ses titulaires et modifier leurs habilitations.") +
-    panel("Titulaires du rôle", `<div class="panel-body">${filterSelect("memberRole", "Rôle à consulter", Object.entries(ROLES).map(([key, r]) => [key, r.label]), "Administration par défaut")}
+    panel("Titulaires du rôle", `<div class="panel-body">${filterSelect("memberRole", "Rôle à consulter", Object.entries(ROLES).map(([key, r]) => [key, r.label]), "Administrateur par défaut")}
       <h3 class="mt">${esc(ROLES[selectedRole].label)} · ${members.length} titulaire(s)</h3>
-      ${members.map(u => `<div class="role-member"><div class="person">${avatar(u.name)}<span><strong>${esc(u.name)}</strong><small>${esc(u.email)}</small></span></div>${btn("Modifier les rôles", "account-form", "small", "users", data("id", u.id))}</div>`).join("") || empty("Aucun titulaire", "Vous pouvez attribuer ce rôle depuis la fiche d’un utilisateur.")}</div>`);
+      ${members.map(u => `<div class="role-member"><div class="person">${avatar(u.name)}<span><strong>${esc(u.name)}</strong><small>${esc(u.email)}</small></span></div>${btn("Modifier les rôles", "account-form", "small", "users", data("id", u.id))}</div>`).join("") || empty("Aucun titulaire", "Vous pouvez attribuer ce rôle depuis la fiche d’un utilisateur.")}</div>`) +
+    (assign ? panel("Attribuer le rôle · " + ROLES[selectedRole].label, assign) : "");
 }
 function adminHome() {
   return (
@@ -1209,7 +1215,7 @@ function adminHome() {
       "Tableau de bord",
       "Suivi des accès, des imports et de l’activité administrative.",
       btn("Exporter les journaux", "export-audit", "", "download"),
-      "ADMINISTRATION TECHNIQUE",
+      "ADMINISTRATION",
     ) +
     `<div class="metric-grid mb">${metric("Comptes actifs", s.users.filter((u) => u.active).length, s.users.filter((u) => !u.active).length + " compte(s) désactivé(s)", "users")}${metric("Changements de droits", s.audit.filter((x) => ["Changement de droits", "Compte"].includes(x.type)).length, "Événements de gouvernance tracés", "shield")}${metric("Connexions récentes", s.audit.filter((x) => x.type === "Connexion" && x.result === "Succès").length, "Connexions conservées dans ce jeu local", "lock")}${metric("Imports techniques", s.imports.length, s.imports.reduce((n, x) => n + x.rejected, 0) + " ligne(s) rejetée(s) · aucune identité étudiante", "upload")}</div><div class="dashboard-grid"><div>${panel("Derniers événements d’audit", can(role(), "audit", s) ? auditTable(s.audit.slice(0, 8)) : notice("Lecture du journal non autorisée", "Cette autorisation a été retirée de votre rôle.", "", "lock"), btn("Suivre les actions", "nav-target", "link small", "arrow", 'data-target="logs"'))}</div><aside class="stack">${panel("À examiner", `<div class="panel-body">${alertRow("Actions en échec", s.audit.filter(e => e.result === "Échec").length + " événement(s) dans le journal.", "Voir les échecs", "audit-failures", "", "alert")}${alertRow("Rejets à l’import", s.imports.reduce((total, entry) => total + entry.rejected, 0) + " ligne(s) rejetée(s) sur les imports enregistrés.", "Examiner les imports", "audit-imports", "", "upload")}</div>`)}</aside></div>`
   );
@@ -1599,16 +1605,16 @@ function showPreview(uid) {
     true,
   );
 }
-function accountEditor(uid) {
+function accountEditor(uid, suggestedRole) {
   const u = s.users.find((x) => x.id === uid);
   return header(u ? "Modifier l’utilisateur" : "Créer un utilisateur", u ? esc(u.name) : "Renseignez son identité et attribuez ses rôles.") +
     `<section class="panel"><form class="panel-body" data-form="account-preview" ${uid ? data("account", uid) : ""}><div class="form-error" role="alert"></div>` +
-    `<div class="form-section">Identité</div><div class="form-grid">${field("Nom complet", "name", u?.name || "")}${field("Adresse e-mail", "email", u?.email || "", "email")}${u ? `<div class="field"><span>Création</span><small>${u.created}</small></div><div class="field"><span>Dernière connexion</span><small>${u.lastLogin}</small></div>` : ""}</div><div class="form-section">Habilitations</div>${Object.entries(
+    `<div class="form-section">Identité</div><div class="form-grid">${field("Nom complet", "name", u?.name || "")}${field("Adresse e-mail", "email", u?.email || "", "email")}${u ? `<div class="field"><span>Création</span><small>${u.created}</small></div><div class="field"><span>Dernière connexion</span><small>${u.lastLogin}</small></div>` : ""}</div><div class="form-section">Rôles attribués</div><p class="subtext">Cochez un ou plusieurs rôles pour cet utilisateur.</p>${Object.entries(
       ROLES,
     )
       .map(
         ([r, v]) =>
-          `<label class="check-label"><input name="roles" type="checkbox" value="${r}" ${u?.roles.includes(r) ? "checked" : ""}>${v.label}</label>`,
+          `<label class="check-label"><input name="roles" type="checkbox" value="${r}" ${u?.roles.includes(r) || r === suggestedRole ? "checked" : ""}>${v.label}</label>`,
       )
       .join(
         "",
@@ -2609,6 +2615,18 @@ async function handleSubmit(e) {
           "Disponibilité et capacité enregistrées.",
         );
         break;
+      case "assign-role": {
+        if (role() !== "admin" || !can(role(), "accounts", s, "configure"))
+          throw Error("Attribution non autorisée.");
+        if (!s.users.some(u => u.id === p.account)) throw Error("Choisissez un utilisateur.");
+        const suggestedRole = filters.memberRole || "admin";
+        tab = "users";
+        detailId = p.account;
+        filters = { suggestedRole };
+        render();
+        document.querySelector('[name="roles"]:checked')?.focus();
+        break;
+      }
       case "account-preview": {
         p.id = form.dataset.account;
         p.roles = f.getAll("roles");

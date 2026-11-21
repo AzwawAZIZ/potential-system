@@ -1,7 +1,7 @@
 export const TODAY = "2026-11-21";
 export const ROLES = {
   admin: {
-    label: "Administrateur technique",
+    label: "Administrateur",
     short: "Administration",
     color: "#334155",
   },
