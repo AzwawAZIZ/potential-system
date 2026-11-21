@@ -332,9 +332,9 @@ export function log(s, type, detail, result = "Succès", target = "système") {
     target,
   });
 }
-export function notify(s, user, role, text, email = false) {
+export function notify(s, user, role, text, email = false, visitId) {
   if (!user) return;
-  s.notifications.unshift({ id: id("n"), user, role, text, read: false });
+  s.notifications.unshift({ id: id("n"), user, role, text, read: false, ...(visitId ? { visitId } : {}) });
   if (email)
     s.emails.unshift({
       id: id("email"),
@@ -346,6 +346,19 @@ export function notify(s, user, role, text, email = false) {
 function need(v, msg) {
   if (!v || !String(v).trim()) throw Error(msg);
 }
+function notifyVisit(s, d, visit) {
+  const proposed = visit.status === "Proposée";
+  const when = (date, time) => date.split("-").reverse().join("/") + " à " + time;
+  let slots = when(visit.date, visit.time);
+  if (proposed && visit.alternative) slots += " ou " + when(...visit.alternative.split(" "));
+  const text = `Visite ${visit.status.toLowerCase()} pour ${d.name} · ${slots} · ${visit.place}`;
+  for (const [role, user] of [["student", d.user], ["company", d.mentor], ["tutor", d.tutor]]) {
+    if (proposed && role === s.session.role && user === s.session.user) continue;
+    if (user && s.users.some(u => u.id === user && u.active && u.roles.includes(role)))
+      notify(s, user, role, text, role === "company", visit.id);
+  }
+}
+
 function validCalendarDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const [year, month, day] = value.split("-").map(Number);
@@ -792,21 +805,7 @@ function execute(s, action, p = {}) {
         status: "Proposée",
         alternative: p.date2 ? `${p.date2} ${p.time2}` : null,
       });
-      participants(s, d)
-        .filter((x) => x !== u.id)
-        .forEach((x) =>
-          notify(
-            s,
-            x,
-            s.users.find((v) => v.id === x)?.roles.includes("company")
-              ? "company"
-              : x === d.user
-                ? "student"
-                : "tutor",
-            "Une proposition de visite est disponible.",
-            x === d.mentor,
-          ),
-        );
+      notifyVisit(s, d, s.visits[0]);
       break;
     case "visitConfirm":
       requireRole(s, ["tutor"]);
@@ -830,15 +829,7 @@ function execute(s, action, p = {}) {
           v.alternative = previous;
         }
         v.status = p.done ? "Réalisée" : "Confirmée";
-        participants(s, d).forEach((x) =>
-          notify(
-            s,
-            x,
-            x === d.user ? "student" : x === d.mentor ? "company" : "tutor",
-            "Visite " + v.status.toLowerCase(),
-            x === d.mentor,
-          ),
-        );
+        notifyVisit(s, d, v);
       }
       break;
     case "crvSave":
@@ -954,7 +945,7 @@ function execute(s, action, p = {}) {
           date: new Date().toISOString(),
         });
         c.text = p.text;
-        delete c.html;
+        c.html = p.html || null;
         c.delegated = false;
         c.disagreement = false;
         c.visas = [];

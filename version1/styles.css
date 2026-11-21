@@ -2100,3 +2100,23 @@ html.no-motion * {
   .config-rail nav button { width: auto; }
   .config-rail nav button svg:last-child { display: none; }
 }
+
+.rich-toolbar { flex-wrap: wrap; align-items: stretch; gap: 6px; padding: 8px; }
+.edit-group { display: grid; grid-template-rows: 1fr auto; gap: 5px; border-right: 1px solid var(--border); padding-right: 7px; max-width: 100%; }
+.edit-group:last-child { border: 0; }
+.edit-group > div { display: flex; flex-wrap: wrap; align-content: start; gap: 3px; max-width: 285px; }
+.edit-group > small { font-size: 11px; color: var(--muted); text-align: center; }
+.edit-group button, .edit-group select { color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 5px; min-height: 30px; }
+.edit-group button { min-width: 30px; padding: 4px 6px; font-size: 15px; }
+.edit-group select { width: auto; padding: 3px; font-size: 12px; }
+.edit-group svg { width: 17px; height: 17px; }
+.edit-group button:hover { color: var(--primary); background: var(--bg); }
+.rich-content { padding: clamp(16px, 3vw, 40px); font: 12pt/1.6 Arial, sans-serif; }
+
+.rich-content font[size="1"] { font-size: 10pt; }
+.rich-content font[size="2"] { font-size: 12pt; }
+.rich-content font[size="3"] { font-size: 14pt; }
+.rich-content font[size="4"] { font-size: 16pt; }
+.rich-content font[size="5"] { font-size: 18pt; }
+.rich-content font[size="6"] { font-size: 24pt; }
+.rich-content font[size="7"] { font-size: 32pt; }

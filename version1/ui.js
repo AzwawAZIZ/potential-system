@@ -111,12 +111,74 @@ export const miniPipeline = (n) =>
 export function pipeline(n) {
   return `<div class="pipeline" role="group" tabindex="0" aria-label="Avancement du parcours">${["Recherche", "Contrat", "Affectation", "Suivi & CRA", "Visite", "Circuit CRV", "Clôture"].map((t, i) => `<div class="pipeline-step ${i < n ? "done" : i === n ? "current" : ""}"><i>${i < n ? "✓" : i + 1}</i>${t}</div>`).join("")}</div>`;
 }
+const editorFonts = ["Arial", "Georgia", "Verdana", "Courier New"];
+const editorSizes = ["10", "12", "14", "16", "18", "24", "32"];
+const documentTags = new Set("b strong i em u s strike sub sup p div br ul ol li h2 h3 h4 span font".split(" "));
+const richColor = value => /^(#[\da-f]{3,8}|rgb\([\d\s,]+\))$/i.test(value);
 export function safeRich(html) {
-  return esc(html).replace(
-    /&lt;(\/?(?:b|strong|i|em|u|p|div|br|ul|ol|li|h3|h4)\s*\/?)&gt;/gi,
-    "<$1>",
-  );
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  const output = document.createElement("div");
+  function copy(node, parent) {
+    if (node.nodeType === 3) { parent.append(node.textContent); return; }
+    if (node.nodeType !== 1) return;
+    const tag = node.localName;
+    if (["script", "style", "iframe", "object", "template", "svg", "math"].includes(tag)) return;
+    let target = parent;
+    if (documentTags.has(tag)) {
+      target = document.createElement(tag === "font" ? "span" : tag);
+      const css = node.style;
+      const font = (css.fontFamily || node.getAttribute("face") || "").replace(/["']/g, "");
+      if (editorFonts.includes(font)) target.style.fontFamily = font;
+      const size = css.fontSize || (tag === "font" && editorSizes[Number(node.getAttribute("size")) - 1] + "pt");
+      if (editorSizes.some(v => size === v + "pt")) target.style.fontSize = size;
+      const color = css.color || node.getAttribute("color") || "";
+      if (richColor(color)) target.style.color = color;
+      if (richColor(css.backgroundColor)) target.style.backgroundColor = css.backgroundColor;
+      const align = css.textAlign || node.getAttribute("align");
+      if (["left", "center", "right", "justify"].includes(align)) target.style.textAlign = align;
+      if (["bold", "700"].includes(css.fontWeight)) target.style.fontWeight = "bold";
+      if (css.fontStyle === "italic") target.style.fontStyle = "italic";
+      if (/^(underline|line-through)( (underline|line-through))?$/.test(css.textDecorationLine))
+        target.style.textDecorationLine = css.textDecorationLine;
+      parent.append(target);
+    }
+    for (const child of node.childNodes) copy(child, target);
+  }
+  for (const child of template.content.childNodes) copy(child, output);
+  return output.innerHTML;
+}
+const editorLines = {
+  left: "M3 5h18M3 10h11M3 15h18M3 20h11",
+  center: "M3 5h18M7 10h10M3 15h18M7 20h10",
+  right: "M3 5h18M10 10h11M3 15h18M10 20h11",
+  justify: "M3 5h18M3 10h18M3 15h18M3 20h18",
+  bullets: "M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1",
+};
+const editorIcon = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="${editorLines[key]}"/></svg>`;
+function editorButton(command, label, glyph, action = "editor-command") {
+  return `<button type="button" data-action="${action}" data-command="${command}" aria-label="${label}" title="${label}">${glyph}</button>`;
+}
+function editorSelect(command, label, choices) {
+  return `<select data-editor-select="${command}" aria-label="${label}" title="${label}"><option value="">${label}</option>${choices.map(([value, text]) => `<option value="${value}">${text}</option>`).join("")}</select>`;
 }
 export function richEditor(text = "", html = "") {
-  return `<div class="rich-editor field full"><span id="rich-label">Compte rendu · Modèle MIAGE</span><div class="rich-toolbar" role="toolbar" aria-label="Mise en forme du compte rendu"><button type="button" data-action="editor-bold" aria-label="Mettre en gras"><strong>Gras</strong></button><button type="button" data-action="editor-italic" aria-label="Mettre en italique"><em>Italique</em></button><button type="button" data-action="editor-list">Liste à puces</button></div><div id="rich-crv" class="rich-content" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="rich-label" spellcheck="true">${html ? safeRich(html) : esc(text).replaceAll("\n", "<br>")}</div><small>Structure MIAGE : Contexte · Missions · Compétences · Intégration · Avis. La mise en forme simple est conservée ; les contenus collés sont ramenés au texte.</small></div>`;
+  const group = (name, tools) => `<div class="edit-group" role="group" aria-label="${name}"><div>${tools}</div><small>${name}</small></div>`;
+  const font = editorSelect("fontName", "Police", editorFonts.map(f => [f, f])) +
+    editorSelect("fontSize", "Taille", editorSizes.map((v, i) => [i + 1, v + " pt"])) +
+    editorButton("bold", "Mettre en gras", "<b>G</b>", "editor-bold") +
+    editorButton("italic", "Mettre en italique", "<i>I</i>", "editor-italic") +
+    editorButton("underline", "Souligner", "<u>S</u>") + editorButton("strikeThrough", "Barrer", "<s>ab</s>") +
+    editorButton("subscript", "Indice", "x<sub>2</sub>") + editorButton("superscript", "Exposant", "x<sup>2</sup>") +
+    editorSelect("foreColor", "Couleur", [["#172c46","Encre"],["#16588b","Bleu"],["#a82e29","Rouge"],["#216842","Vert"]]) +
+    editorSelect("hiliteColor", "Surligner", [["#fff09a","Jaune"],["#c4eafa","Bleu clair"],["#cbf1cc","Vert clair"]]);
+  const paragraph = editorButton("insertUnorderedList", "Liste à puces", editorIcon("bullets"), "editor-list") +
+    editorButton("insertOrderedList", "Liste numérotée", "1. ☰") +
+    ["left","center","right","justify"].map((k,i) => editorButton(["justifyLeft","justifyCenter","justifyRight","justifyFull"][i],
+      ["Aligner à gauche","Centrer","Aligner à droite","Justifier"][i],editorIcon(k))).join("");
+  return `<div class="rich-editor field full"><span id="rich-label">Compte rendu de visite</span><div class="rich-toolbar" role="toolbar" aria-label="Mise en forme du compte rendu">
+    ${group("Édition", editorButton("undo","Annuler la frappe","↶") + editorButton("redo","Rétablir","↷"))}
+    ${group("Police",font)}${group("Paragraphe",paragraph)}
+    ${group("Styles",editorSelect("formatBlock","Style",[["p","Normal"],["h2","Titre"],["h3","Sous-titre"]]) + editorButton("removeFormat","Effacer la mise en forme","Tₓ"))}
+    </div><div id="rich-crv" class="rich-content" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="rich-label" spellcheck="true">${html ? safeRich(html) : esc(text).replaceAll("\n", "<br>")}</div></div>`;
 }

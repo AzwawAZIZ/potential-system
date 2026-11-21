@@ -177,7 +177,7 @@ function act(action, p, msg = "Modification enregistrée et tracée.") {
       "Échec",
     );
     save();
-    const err = document.querySelector(".form-error");
+    const err = overlay.querySelector(".form-error") || app.querySelector(".form-error");
     if (err) {
       err.textContent = e.message;
       err.setAttribute("tabindex", "-1");
@@ -1014,6 +1014,11 @@ function roomsPage() {
       .join("")}`
   );
 }
+function showVisitMonth(date) {
+  const [year, month] = date.split("-").map(Number);
+  const [baseYear, baseMonth] = TODAY.split("-").map(Number);
+  calendarOffset = 12 * (year - baseYear) + month - baseMonth;
+}
 function calendarDate() {
   const [year, month] = TODAY.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1 + calendarOffset, 1));
@@ -1031,7 +1036,13 @@ function calendarContent(list) {
   const headings = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((x) => `<div class="cal-head">${x}</div>`).join("");
   const blanks = Array.from({ length: offset }, () => "<div></div>").join("");
   const dates = Array.from({ length: days }, (_, i) => {
-    const events = list.filter((v) => v.date === prefix + String(i + 1).padStart(2, "0"));
+    const day = prefix + String(i + 1).padStart(2, "0");
+    const events = list.flatMap(v => {
+      const slots = v.date === day ? [v] : [];
+      if (v.status === "Proposée" && v.alternative?.startsWith(day + " "))
+        slots.push({ ...v, time: v.alternative.slice(11) });
+      return slots;
+    });
     return `<div class="cal-day ${events.length ? "event" : ""}"><strong>${i + 1}</strong>${events.map((e) => `${esc(e.time)}<br>${esc(dname(e.student).split(" ")[0])}`).join("<br>")}</div>`;
   }).join("");
   return `<div class="panel-body"><div class="calendar" aria-label="Calendrier des visites · ${calendarTitle()}">${headings}${blanks}${dates}</div><p class="subtext">Les jours colorés correspondent à une visite proposée, confirmée ou réalisée. Le calendrier s’ouvre sur le mois du jeu de démonstration.</p></div>`;
@@ -1053,7 +1064,7 @@ function agendaPage() {
           )
         : "",
     ) +
-    `<div class="grid2">${panel("Les prochains rendez-vous", `<div class="panel-body">${list.map((v) => `<div class="alert-row"><span class="alert-icon">${icon("calendar")}</span><div class="alert-content"><h3>${fmt(v.date)} · ${esc(v.time)}</h3><p>${esc(dname(v.student))} · ${esc(v.place)}</p><div class="row wrap mt">${badge(v.status)}${btn(".ics", "ics", "small", "download", data("id", v.id))}${role() === "tutor" && v.status === "Proposée" ? btn("Confirmer", "visit-confirm", "small primary", "check", data("student", v.student) + " " + data("id", v.id)) : ""}</div></div></div>`).join("") || empty("Aucun rendez-vous", "Vos prochaines visites apparaîtront ici.", "Retour à l’accueil", "home")}</div>`)}${panel(
+    `<div class="grid2">${panel("Les prochains rendez-vous", `<div class="panel-body">${list.map((v) => `<div class="alert-row" id="visit-${esc(v.id)}" tabindex="-1"><span class="alert-icon">${icon("calendar")}</span><div class="alert-content"><h3>${fmt(v.date)} · ${esc(v.time)}</h3><p>${esc(dname(v.student))} · ${esc(v.place)}</p><div class="row wrap mt">${badge(v.status)}${btn(".ics", "ics", "small", "download", data("id", v.id))}${role() === "tutor" && v.status === "Proposée" ? btn("Confirmer", "visit-confirm", "small primary", "check", data("student", v.student) + " " + data("id", v.id)) : ""}</div></div></div>`).join("") || empty("Aucun rendez-vous", "Vos prochaines visites apparaîtront ici.", "Retour à l’accueil", "home")}</div>`)}${panel(
       calendarTitle(),
       calendarContent(list),
       `<div class="calendar-controls">${btn("", "calendar-prev", "small", "back", 'aria-label="Mois précédent"')}${btn("", "calendar-next", "small", "arrow", 'aria-label="Mois suivant"')}</div>`,
@@ -1700,7 +1711,7 @@ function visitForm(st) {
   formDialog(
     "Proposer une visite",
     "visit",
-    `${notice("Un ou deux créneaux, au choix", "Le tuteur universitaire confirme le rendez-vous. Précisez le lieu exact ou le mode visioconférence.", "", "calendar")}<div class="form-grid">${select(
+    `${notice("Un ou deux créneaux, au choix", "L’envoi ajoute la proposition à l’agenda et prévient les autres participants dans leur espace. Le tuteur confirme ensuite le créneau retenu.", "", "calendar")}<div class="form-grid">${select(
       "Étudiant concerné",
       "student",
       opts.map((d) => [d.id, d.name]),
@@ -1947,7 +1958,7 @@ async function handleAction(a, el) {
             notices(s)
               .map(
                 (n) =>
-                  `<article class="notification ${!n.read ? "unread" : ""}"><p>${esc(n.text)}</p><div class="mt">${n.read ? badge("Lu") : btn("Marquer comme lue", "notice-read", "small", "check", data("id", n.id))}</div></article>`,
+                  `<article class="notification ${!n.read ? "unread" : ""}"><p>${esc(n.text)}</p><div class="row wrap mt">${n.visitId && visitsFor(s).some(v => v.id === n.visitId) ? btn("Voir dans l’agenda", "notice-visit", "small", "calendar", data("id", n.id)) : ""}${n.read ? badge("Lu") : btn("Marquer comme lue", "notice-read", "small", "check", data("id", n.id))}</div></article>`,
               )
               .join("") ||
             empty(
@@ -1961,6 +1972,17 @@ async function handleAction(a, el) {
           true,
         );
         break;
+      case "notice-visit": {
+        const n = notices(s).find(item => item.id === p.id);
+        const visit = n && visitsFor(s).find(v => v.id === n.visitId);
+        if (!visit) throw Error("Cette visite n’est plus accessible.");
+        n.read = true;
+        save();
+        showVisitMonth(visit.date);
+        goto("agenda");
+        document.getElementById("visit-" + visit.id)?.focus();
+        break;
+      }
       case "notice-read": {
         const n = notices(s).find((x) => x.id === p.id);
         if (n) n.read = true;
@@ -2068,21 +2090,10 @@ async function handleAction(a, el) {
         break;
       case "editor-bold":
       case "editor-italic":
-      case "editor-list": {
-        const editor = el
-          .closest(".rich-editor")
-          ?.querySelector(".rich-content");
-        editor?.focus();
-        document.execCommand(
-          a === "editor-bold"
-            ? "bold"
-            : a === "editor-italic"
-              ? "italic"
-              : "insertUnorderedList",
-          false,
-        );
+      case "editor-list":
+      case "editor-command":
+        formatSelection(el, el.dataset.command);
         break;
-      }
       case "crv-edit": {
         const d = dossier(s, student, "crv"),
           c = crvsFor(s).find((x) => x.student === d.id && x.id === p.id);
@@ -2140,7 +2151,7 @@ async function handleAction(a, el) {
         formDialog(
           "Rectifier le CRV · délégation temporaire",
           "rectify",
-          `${notice("Version originale conservée", "L’enregistrement ferme votre droit d’édition, lève le désaccord et remet les visas à zéro.", "amber")}<details class="mb"><summary>Version initiale du tuteur</summary><pre>${esc(c.text)}</pre></details>${area("Version rectifiée du compte rendu", "text", c.text)}`,
+          `${notice("Version originale conservée", "L’enregistrement ferme votre droit d’édition, lève le désaccord et remet les visas à zéro.", "amber")}<details class="mb"><summary>Version initiale du tuteur</summary><pre>${esc(c.text)}</pre></details>${richEditor(c.text, c.html)}`,
           { student },
           "Enregistrer la rectification",
           false,
@@ -2577,7 +2588,7 @@ async function handleSubmit(e) {
     const editor = form.querySelector(".rich-content");
     if (editor) {
       p.text = editor.innerText;
-      p.html = editor.innerHTML;
+      p.html = safeRich(editor.innerHTML);
     }
     if (f.get("attachment")?.size)
       p.attachment = attachment(f.get("attachment"), s);
@@ -2711,9 +2722,16 @@ async function handleSubmit(e) {
       case "request":
         act("request", { ...context, ...p });
         break;
-      case "visit":
-        act("visit", p);
+      case "visit": {
+        if (!act("visit", p)) break;
+        const visit = s.visits[0];
+        showVisitMonth(visit.date);
+        goto("agenda");
+        const recipients = s.notifications.filter(n => n.visitId === visit.id);
+        const names = recipients.map(n => name(n.user));
+        toast("Visite proposée. " + (names.length ? "Notification envoyée à " + names.join(" et ") + "." : "Aucun autre compte affecté à prévenir."));
         break;
+      }
       case "crvSave":
         act("crvSave", { ...context, ...p });
         break;
@@ -3077,8 +3095,36 @@ window.addEventListener("storage", (e) => {
 });
 render();
 
-document.addEventListener("mousedown", (e) => {
-  if (e.target.closest(".rich-toolbar")) e.preventDefault();
+const editorSelections = new WeakMap();
+document.addEventListener("selectionchange", () => {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  const node = range.commonAncestorContainer;
+  const editor = (node.nodeType === 1 ? node : node.parentElement)?.closest(".rich-content");
+  if (editor) editorSelections.set(editor, range.cloneRange());
+});
+function formatSelection(control, command, value = null) {
+  const editor = control.closest(".rich-editor")?.querySelector(".rich-content");
+  if (!editor) return;
+  const saved = editorSelections.get(editor);
+  editor.focus();
+  if (saved && editor.contains(saved.commonAncestorContainer)) {
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(saved);
+  }
+  document.execCommand(command, false, value);
+}
+document.addEventListener("mousedown", e => {
+  if (e.target.closest(".rich-toolbar button")) e.preventDefault();
+});
+document.addEventListener("change", e => {
+  const control = e.target.closest("[data-editor-select]");
+  if (control && control.value) {
+    formatSelection(control, control.dataset.editorSelect, control.value);
+    control.selectedIndex = 0;
+  }
 });
 document.addEventListener("paste", (e) => {
   if (e.target.closest(".rich-content")) {
