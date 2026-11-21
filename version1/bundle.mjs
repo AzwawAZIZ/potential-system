@@ -9,6 +9,11 @@ let js = files
         .replace(/\bexport (?=(?:const|let|function|class)\b)/g, ""),
   )
   .join("\n");
+const adminPreview = process.argv.includes("--admin-preview");
+if (adminPreview) {
+  js = js.replace('const KEY = "suivi-miage-v1";', 'const KEY = "suivi-miage-demo-admin-v1";');
+  js += '\nif (!s.session) authenticate("admin");\nif (role() === "admin") goto("settings");';
+}
 js = js.replace(/<\/script/gi, "<\\/script");
 const css = readFileSync("styles.css", "utf8");
 const html = readFileSync("index.html", "utf8")
@@ -20,9 +25,6 @@ const html = readFileSync("index.html", "utf8")
     /<script\s+type="module"\s+src="app\.js"\s*><\/script>/,
     () => `<script>\n'use strict';\n(()=>{\n${js}\n})();\n</script>`,
   );
-writeFileSync("Suivi-MIAGE-UPJV.html", html);
-console.log(
-  "Version autonome générée : Suivi-MIAGE-UPJV.html · " +
-    Math.round(Buffer.byteLength(html) / 1024) +
-    " Ko",
-);
+const output = adminPreview ? "Prototype-administration.html" : "Suivi-MIAGE-UPJV.html";
+writeFileSync(output, html);
+console.log(`Version autonome générée : ${output} · ${Math.round(Buffer.byteLength(html) / 1024)} Ko`);

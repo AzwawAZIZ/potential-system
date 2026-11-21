@@ -2045,3 +2045,58 @@ html.no-motion * {
 .crv-text div {
   margin-bottom: 5px;
 }
+
+.config-layout {
+  display: grid;
+  grid-template-columns: clamp(195px, 19vw, 275px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(16px, 2vw, 32px);
+}
+.config-rail {
+  position: sticky;
+  top: 80px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.config-title, .config-rail nav button, .role-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.config-title {
+  color: var(--navy);
+  padding: 6px 8px 17px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.config-title h2 { margin: 0; font-size: 19px; }
+.config-rail nav { display: grid; gap: 4px; }
+.config-rail nav button {
+  text-align: left;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  border-radius: 7px;
+  padding: 12px 9px;
+  font-size: 14px;
+}
+.config-rail nav button:hover { background: var(--surface2); }
+.config-rail nav button[aria-current] { background: var(--primary); color: var(--surface); }
+.config-rail nav button svg:last-child { width: 14px; margin-left: auto; }
+.config-detail { min-width: 0; }
+.config-detail .page-head { margin: 3px 0 20px; flex-wrap: wrap; }
+.config-detail .page-head h1 { font-size: clamp(26px, 2.5vw, 36px); }
+.config-detail .page-head .eyebrow { display: none; }
+.config-detail .panel + .panel { margin-top: 16px; }
+.role-member { justify-content: space-between; padding: 12px 0; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+.action-record { margin-bottom: 18px; border-left: 4px solid var(--primary); }
+@media (max-width: 1000px) {
+  .config-layout { grid-template-columns: minmax(0, 1fr); }
+  .config-rail { position: static; }
+  .config-rail nav { display: flex; flex-wrap: wrap; }
+  .config-rail nav button { width: auto; }
+  .config-rail nav button svg:last-child { display: none; }
+}
